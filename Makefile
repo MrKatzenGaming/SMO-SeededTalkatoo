@@ -1,8 +1,5 @@
 .PHONY: debug clean
 
-check_symbols:
-	python check_symbols.py
-
 debug: format
 	cmake -DCMAKE_BUILD_TYPE=Debug -S . -B build && $(MAKE) -C build
 

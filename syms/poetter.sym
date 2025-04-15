@@ -1,0 +1,15 @@
+@smo:100
+GetRandomHookSym = 0x003afb1c
+TableHookSym = 0x003afb08
+@smo:101
+GetRandomHookSym = 0x003b02f4
+TableHookSym = 0x003b02e0
+@smo:110
+GetRandomHookSym = 0x003b03d8
+TableHookSym = 0x003b03c4
+@smo:120
+GetRandomHookSym = 0x003ce5bc
+TableHookSym = 0x003ce5a8
+@smo:130
+GetRandomHookSym = 0x0035fbfc
+TableHookSym = 0x0035fbe8

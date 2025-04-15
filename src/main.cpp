@@ -1,5 +1,5 @@
-#include "hk/gfx/DebugRenderer.h"
 #include "hk/gfx/ImGuiBackendNvn.h"
+#include "hk/hook/InstrUtil.h"
 #include "hk/hook/Trampoline.h"
 
 #include "agl/common/aglDrawContext.h"
@@ -8,6 +8,7 @@
 #include "game/System/Application.h"
 #include "game/System/GameSystem.h"
 
+#include "InputHelper.h"
 #include "al/Library/Controller/InputFunction.h"
 #include "al/Library/LiveActor/ActorPoseKeeper.h"
 #include "al/Library/LiveActor/ActorPoseUtil.h"
@@ -17,6 +18,8 @@
 #include "al/Library/Player/PlayerHolder.h"
 #include "al/Library/Scene/Scene.h"
 #include "al/Library/System/GameSystemInfo.h"
+#include "keeper.h"
+#include "seed.h"
 
 #include <sead/heap/seadExpHeap.h>
 #include <utility>
@@ -44,13 +47,14 @@ HkTrampoline<void, GameSystem*> gameSystemInit = hk::hook::trampoline([](GameSys
     imgui->tryInitialize();
 
     nn::hid::InitializeMouse();
+    InputHelper::setPort(0);
 });
 
 HkTrampoline<void, al::LiveActor*> marioControl = hk::hook::trampoline([](al::LiveActor* player) -> void {
-    if (al::isPadHoldA(-1)) {
-        player->getPoseKeeper()->getVelocityPtr()->y = 0;
-        al::getTransPtr(player)->y += 20;
-    }
+    // if (al::isPadHoldA(-1)) {
+    //     player->getPoseKeeper()->getVelocityPtr()->y = 0;
+    //     al::getTransPtr(player)->y += 20;
+    // }
 
     marioControl.orig(player);
 });
@@ -84,7 +88,7 @@ static void updateImGuiInput() {
 
     io.MouseDrawCursor = true;
 }
-
+static bool showMenu;
 HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSystem* gameSystem) -> void {
     drawMainHook.orig(gameSystem);
 
@@ -104,44 +108,49 @@ HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSyste
     updateImGuiInput();
 
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow();
+    ImGui::Begin("Seeded Talkatoo", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+    ImGui::SetWindowSize({ 200, 100 });
+    if (ImGui::InputInt("Seed", &getKeeper().origSeed)) {
+        getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
+    }
+    ImGui::Text("Show Menu: %d", showMenu);
+    ImGui::Text("Seeded: %d", getKeeper().origSeed);
+    ImGui::End();
+
     ImGui::Render();
 
     hk::gfx::ImGuiBackendNvn::instance()->draw(ImGui::GetDrawData(), drawContext->getCommandBuffer()->ToData()->pNvnCommandBuffer);
 
-    /* DebugRenderer */
+    InputHelper::updatePadState();
+});
 
-    auto* renderer = hk::gfx::DebugRenderer::instance();
+HkTrampoline<void, HakoniwaSequence*> hakoniwaSequenceUpdate = hk::hook::trampoline([](HakoniwaSequence* hakoniwaSequence) -> void {
+    hakoniwaSequenceUpdate.orig(hakoniwaSequence);
 
-    renderer->clear();
-    renderer->begin(drawContext->getCommandBuffer()->ToData()->pNvnCommandBuffer);
+    StageScene* stageScene = (StageScene*)hakoniwaSequence->mCurrentScene;
 
-    renderer->setGlyphSize(0.45);
-
-    renderer->drawQuad(
-        { { 30, 30 }, { 0, 0 }, 0xef000000 },
-        { { 300, 30 }, { 1.0, 0 }, 0xef000000 },
-        { { 300, 100 }, { 1.0, 1.0 }, 0xef000000 },
-        { { 30, 100 }, { 0, 1.0 }, 0xef000000 });
-
-    renderer->setCursor({ 50, 50 });
-
-    if (player) {
-        const sead::Vector3f& trans = al::getTrans(player);
-
-        renderer->printf("Pos: %.2f %.2f %.2f\n", trans.x, trans.y, trans.z);
-    } else {
-        renderer->printf("No player\n");
+    if (InputHelper::isHoldZL() && InputHelper::isPressPadUp()) {
+        showMenu = !showMenu;
     }
 
-    renderer->end();
+    if (showMenu) {
+        if (InputHelper::isPressPadRight()) {
+            getKeeper().origSeed++;
+            getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
+        } else if (InputHelper::isPressPadLeft()) {
+            getKeeper().origSeed--;
+            getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
+        }
+    }
 });
 
 extern "C" void hkMain() {
     marioControl.installAtSym<"_ZN19PlayerActorHakoniwa7controlEv">();
     drawMainHook.installAtSym<"_ZN10GameSystem8drawMainEv">();
     gameSystemInit.installAtSym<"_ZN10GameSystem4initEv">();
+    hakoniwaSequenceUpdate.installAtSym<"_ZN16HakoniwaSequence6updateEv">();
+    hk::hook::writeBranchLinkAtSym<"GetRandomHookSym">(Seeded::getRandomHook);
+    hk::hook::writeBranchLinkAtSym<"TableHookSym">(Seeded::tableHook);
 
-    hk::gfx::DebugRenderer::instance()->installHooks();
     hk::gfx::ImGuiBackendNvn::instance()->installHooks(false);
 }
