@@ -21,17 +21,6 @@ public:
     static bool isReadInputs() { return isReadInput; }
 
     static bool isInputToggled() { return toggleInput; }
-
-    // keyboard key presses
-
-    static bool isKeyHold(nn::hid::KeyboardKey key);
-
-    static bool isKeyPress(nn::hid::KeyboardKey key);
-
-    static bool isKeyRelease(nn::hid::KeyboardKey key);
-
-    static bool isModifierActive(nn::hid::KeyboardModifier modifier);
-
     // specific button funcs
 
     static bool isHoldA() { return isButtonHold(nn::hid::NpadButton::A); }

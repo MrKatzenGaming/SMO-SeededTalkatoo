@@ -9,8 +9,6 @@
 #include "game/System/GameSystem.h"
 
 #include "InputHelper.h"
-#include "al/Library/Controller/InputFunction.h"
-#include "al/Library/LiveActor/ActorPoseKeeper.h"
 #include "al/Library/LiveActor/ActorPoseUtil.h"
 #include "al/Library/LiveActor/LiveActor.h"
 #include "al/Library/LiveActor/LiveActorKit.h"
@@ -46,106 +44,55 @@ HkTrampoline<void, GameSystem*> gameSystemInit = hk::hook::trampoline([](GameSys
             } });
     imgui->tryInitialize();
 
-    nn::hid::InitializeMouse();
     InputHelper::setPort(0);
 });
 
-HkTrampoline<void, al::LiveActor*> marioControl = hk::hook::trampoline([](al::LiveActor* player) -> void {
-    // if (al::isPadHoldA(-1)) {
-    //     player->getPoseKeeper()->getVelocityPtr()->y = 0;
-    //     al::getTransPtr(player)->y += 20;
-    // }
-
-    marioControl.orig(player);
-});
-
-static void updateImGuiInput() {
-    static nn::hid::MouseState state;
-    static nn::hid::MouseState lastState;
-
-    lastState = state;
-    nn::hid::GetMouseState(&state);
-
-    auto& io = ImGui::GetIO();
-    io.AddMousePosEvent(state.x / 1280.f * io.DisplaySize.x, state.y / 720.f * io.DisplaySize.y);
-    constexpr std::pair<nn::hid::MouseButton, ImGuiMouseButton> buttonMap[] = {
-        { nn::hid::MouseButton::Left, ImGuiMouseButton_Left },
-        { nn::hid::MouseButton::Right, ImGuiMouseButton_Right },
-        { nn::hid::MouseButton::Middle, ImGuiMouseButton_Middle },
-    };
-
-    for (const auto& [hidButton, imguiButton] : buttonMap) {
-        if (state.buttons.Test(int(hidButton)) && !lastState.buttons.Test(int(hidButton))) {
-            io.AddMouseButtonEvent(imguiButton, true);
-        } else if (!state.buttons.Test(int(hidButton)) && lastState.buttons.Test(int(hidButton))) {
-            io.AddMouseButtonEvent(imguiButton, false);
-        }
-    }
-
-    io.AddMouseWheelEvent(state.wheelDeltaX, state.wheelDeltaY);
-
-    /* Keyboard missing */
-
-    io.MouseDrawCursor = true;
-}
-static bool showMenu;
+static bool showMenu = true;
 HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSystem* gameSystem) -> void {
     drawMainHook.orig(gameSystem);
 
     auto* drawContext = Application::instance()->mDrawSystemInfo->drawContext;
-
-    HakoniwaSequence* sequence = static_cast<HakoniwaSequence*>(gameSystem->mSequence);
-    if (sequence == nullptr)
-        return;
-
-    al::Scene* scene = sequence->mCurrentScene;
-    al::LiveActor* player = nullptr;
-    if (scene && scene->mLiveActorKit && scene->mLiveActorKit->mPlayerHolder)
-        player = scene->mLiveActorKit->mPlayerHolder->tryGetPlayer(0);
-
     /* ImGui */
-
-    updateImGuiInput();
+    InputHelper::updatePadState();
 
     ImGui::NewFrame();
-    ImGui::Begin("Seeded Talkatoo", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-    ImGui::SetWindowSize({ 200, 100 });
-    if (ImGui::InputInt("Seed", &getKeeper().origSeed)) {
-        getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
+
+    if (showMenu) {
+        ImGui::Begin("Seeded Talkatoo", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+        ImGui::SetWindowSize({ 280, 120 });
+        ImGui::Text("ZR + R + L -> Toggle Menu");
+        ImGui::Text("LEFT/RIGHT -> Change Seed");
+        ImGui::Text("ZL + LEFT/RIGHT -> Change by 10");
+        ImGui::Separator();
+
+        ImGui::Text("Seed: %d", getKeeper().origSeed);
+        ImGui::End();
     }
-    ImGui::Text("Show Menu: %d", showMenu);
-    ImGui::Text("Seeded: %d", getKeeper().origSeed);
-    ImGui::End();
 
     ImGui::Render();
 
     hk::gfx::ImGuiBackendNvn::instance()->draw(ImGui::GetDrawData(), drawContext->getCommandBuffer()->ToData()->pNvnCommandBuffer);
-
-    InputHelper::updatePadState();
 });
 
 HkTrampoline<void, HakoniwaSequence*> hakoniwaSequenceUpdate = hk::hook::trampoline([](HakoniwaSequence* hakoniwaSequence) -> void {
     hakoniwaSequenceUpdate.orig(hakoniwaSequence);
 
-    StageScene* stageScene = (StageScene*)hakoniwaSequence->mCurrentScene;
-
-    if (InputHelper::isHoldZL() && InputHelper::isPressPadUp()) {
+    if (InputHelper::isHoldZR() && InputHelper::isHoldR() && InputHelper::isPressL()) {
         showMenu = !showMenu;
     }
 
     if (showMenu) {
         if (InputHelper::isPressPadRight()) {
-            getKeeper().origSeed++;
+            getKeeper().origSeed += InputHelper::isHoldZL() ? 10 : 1;
             getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
         } else if (InputHelper::isPressPadLeft()) {
-            getKeeper().origSeed--;
+            getKeeper().origSeed -= InputHelper::isHoldZL() ? 10 : 1;
             getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
         }
     }
 });
 
 extern "C" void hkMain() {
-    marioControl.installAtSym<"_ZN19PlayerActorHakoniwa7controlEv">();
     drawMainHook.installAtSym<"_ZN10GameSystem8drawMainEv">();
     gameSystemInit.installAtSym<"_ZN10GameSystem4initEv">();
     hakoniwaSequenceUpdate.installAtSym<"_ZN16HakoniwaSequence6updateEv">();
