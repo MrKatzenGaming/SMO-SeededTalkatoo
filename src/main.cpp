@@ -9,38 +9,29 @@
 #include "game/System/GameSystem.h"
 
 #include "InputHelper.h"
-#include "al/Library/LiveActor/ActorPoseUtil.h"
-#include "al/Library/LiveActor/LiveActor.h"
 #include "al/Library/LiveActor/LiveActorKit.h"
-#include "al/Library/Memory/HeapUtil.h"
-#include "al/Library/Player/PlayerHolder.h"
 #include "al/Library/Scene/Scene.h"
 #include "al/Library/System/GameSystemInfo.h"
 #include "keeper.h"
 #include "seed.h"
 
 #include <sead/heap/seadExpHeap.h>
-#include <utility>
-
-#include "nn/hid.h"
 
 #include "imgui.h"
 
 static sead::Heap* sImGuiHeap = nullptr;
 
 HkTrampoline<void, GameSystem*> gameSystemInit = hk::hook::trampoline([](GameSystem* gameSystem) -> void {
-    sImGuiHeap = sead::ExpHeap::create(2_MB, "ImGuiHeap", al::getStationedHeap(), 8, sead::Heap::cHeapDirection_Forward, false);
-
     gameSystemInit.orig(gameSystem);
 
     auto* imgui = hk::gfx::ImGuiBackendNvn::instance();
 
     imgui->setAllocator(
         { [](size allocSize, size alignment) -> void* {
-             return sImGuiHeap->tryAlloc(allocSize, alignment);
+             return malloc(allocSize);
          },
             [](void* ptr) -> void {
-                sImGuiHeap->free(ptr);
+                free(ptr);
             } });
     imgui->tryInitialize();
 
@@ -59,7 +50,7 @@ HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSyste
 
     if (showMenu) {
         ImGui::Begin("Seeded Talkatoo", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        ImGui::SetWindowSize({ 280, 120 });
+        ImGui::SetWindowSize({ 240, 105 });
         ImGui::Text("ZR + R + L -> Toggle Menu");
         ImGui::Text("LEFT/RIGHT -> Change Seed");
         ImGui::Text("ZL + LEFT/RIGHT -> Change by 10");

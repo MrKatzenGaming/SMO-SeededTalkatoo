@@ -1,17 +1,29 @@
 @smo:100,101,110,120
 
 _ZN16HakoniwaSequence6updateEv
+
 _ZN2rs33calcShineIndexTableNameUnlockableEPiS0_PKN2al9LiveActorE
 _ZN16GameDataFunction19getCurrentStageNameE22GameDataHolderAccessor
 
 _ZN22GameDataHolderAccessorC1EPKN2al18IUseSceneObjHolderE
 _ZN22GameDataHolderAccessorC2EPKN2al18IUseSceneObjHolderE
 
+_ZN11Application9sInstanceE
+
+_ZN10GameSystem4initEv
+_ZN10GameSystem8drawMainEv
+
 @smo:130
 
 _ZN16HakoniwaSequence6updateEv = 0x004b4e90
+
 _ZN2rs33calcShineIndexTableNameUnlockableEPiS0_PKN2al9LiveActorE = 0x004dd8b0
 _ZN16GameDataFunction19getCurrentStageNameE22GameDataHolderAccessor = 0x004db1c0
 
 _ZN22GameDataHolderAccessorC1EPKN2al18IUseSceneObjHolderE = 0x004dd020
 _ZN22GameDataHolderAccessorC2EPKN2al18IUseSceneObjHolderE = 0x004dd020
+
+_ZN11Application9sInstanceE = 0x01374e08
+
+_ZN10GameSystem4initEv = 0x004e1720
+_ZN10GameSystem8drawMainEv = 0x004e29a0

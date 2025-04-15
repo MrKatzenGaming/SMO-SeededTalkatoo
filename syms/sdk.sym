@@ -1,4 +1,5 @@
 @sdk
+nvnBootstrapLoader
 
 _ZN2nn3hid12GetNpadStateEPNS0_16NpadFullKeyStateERKj
 _ZN2nn3hid12GetNpadStateEPNS0_16NpadJoyDualStateERKj
