@@ -3,9 +3,9 @@
 Seeded Talkatoo on all versions.
 
 ## Controlls
-ZR + R + L -> Toggle Menu
-LEFT/RIGHT -> Change Seed
-ZL + LEFT/RIGHT -> Change by 10
+ZR + R + L -> Toggle Menu  
+LEFT/RIGHT -> Change Seed  
+ZL + LEFT/RIGHT -> Change by 10  
 
 ## Installing
 
