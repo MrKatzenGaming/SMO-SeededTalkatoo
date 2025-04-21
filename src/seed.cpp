@@ -15,7 +15,6 @@ Keeper& getKeeper() {
 namespace Seeded {
 
     int find(const char* seek) {
-        static constexpr const char* stageNames[17] = { "CapWorldHomeStage", "WaterfallWorldHomeStage", "SandWorldHomeStage", "LakeWorldHomeStage", "ForestWorldHomeStage", "CloudWorldHomeStage", "ClashWorldHomeStage", "CityWorldHomeStage", "SnowWorldTownStage", "SeaWorldHomeStage", "LavaWorldHomeStage", "BossRaidWorldHomeStage", "SkyWorldHomeStage", "MoonWorldHomeStage", "PeachWorldHomeStage", "Special1WorldHomeStage", "Special2WorldHomeStage" };
         for (int i = 0; i < 17; ++i) {
             if (strcmp(stageNames[i], seek) == 0)
                 return i;
@@ -76,5 +75,4 @@ namespace Seeded {
 
         return;
     }
-
 }
