@@ -88,7 +88,7 @@ HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSyste
 
     if (showMenu) {
         ImGui::Begin("Seeded Talkatoo", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
-        ImGui::SetWindowSize({ 300, 500 });
+        ImGui::SetWindowSize({ 250, 140 });
         ImGui::Text("ZR + R + L -> Toggle Menu");
         ImGui::Text("LEFT/RIGHT -> Change Seed");
         ImGui::Text("ZL + LEFT/RIGHT -> Change by 10");
@@ -104,7 +104,7 @@ HkTrampoline<void, GameSystem*> drawMainHook = hk::hook::trampoline([](GameSyste
     hk::gfx::ImGuiBackendNvn::instance()->draw(ImGui::GetDrawData(), drawContext->getCommandBuffer()->ToData()->pNvnCommandBuffer);
 });
 
-void openKeyboard() {
+void openKeyboard(nn::swkbd::String* resultString) {
     nn::swkbd::ShowKeyboardArg keyboardArg = nn::swkbd::ShowKeyboardArg();
     nn::swkbd::MakePreset(&keyboardArg.keyboardConfig, nn::swkbd::Preset::Default);
 
@@ -141,7 +141,7 @@ void openKeyboard() {
         nn::swkbd::SetInitialTextUtf8(&keyboardArg, mInitialText);
     }
 
-    mIsCancelled = nn::swkbd::ShowKeyboard(&mResultString, keyboardArg) == 671; // no idea what 671 could be
+    mIsCancelled = nn::swkbd::ShowKeyboard(resultString, keyboardArg) == 671; // no idea what 671 could be
 }
 
 HkTrampoline<void, HakoniwaSequence*> hakoniwaSequenceUpdate = hk::hook::trampoline([](HakoniwaSequence* hakoniwaSequence) -> void {
@@ -159,7 +159,7 @@ HkTrampoline<void, HakoniwaSequence*> hakoniwaSequenceUpdate = hk::hook::trampol
             getKeeper().origSeed -= InputHelper::isHoldZL() ? 10 : 1;
             getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
         } else if (InputHelper::isHoldZL() && InputHelper::isPressPadUp()) {
-            openKeyboard();
+            openKeyboard(&mResultString);
             if (!mIsCancelled) {
                 getKeeper().origSeed = std::atoi(mResultString.strBuf);
                 getKeeper().seed_arr = Seeded::generate_2d_array(getKeeper().origSeed);
