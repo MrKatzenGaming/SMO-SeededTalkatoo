@@ -43,27 +43,6 @@ const char* getStyleName(nn::hid::NpadStyleSet style) {
     if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleJoyRight)) {
         index = 4;
     }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleGc)) {
-        index = 5;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStylePalma)) {
-        index = 6;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleLark)) {
-        index = 7;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleHandheldLark)) {
-        index = 8;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleLucia)) {
-        index = 9;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleLagon)) {
-        index = 10;
-    }
-    if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleLager)) {
-        index = 11;
-    }
     if (style.Test((int)nn::hid::NpadStyleTag::NpadStyleSystemExt)) {
         index = 12;
     }

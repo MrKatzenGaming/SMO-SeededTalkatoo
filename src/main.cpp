@@ -54,7 +54,7 @@ static void updateImGuiInput() {
     nn::hid::GetMouseState(&state);
 
     auto& io = ImGui::GetIO();
-    io.AddMousePosEvent(state.x / 1280.f * io.DisplaySize.x, state.y / 720.f * io.DisplaySize.y);
+    io.AddMousePosEvent(state.mX / 1280.f * io.DisplaySize.x, state.mY / 720.f * io.DisplaySize.y);
     constexpr std::pair<nn::hid::MouseButton, ImGuiMouseButton> buttonMap[] = {
         { nn::hid::MouseButton::Left, ImGuiMouseButton_Left },
         { nn::hid::MouseButton::Right, ImGuiMouseButton_Right },
@@ -62,14 +62,14 @@ static void updateImGuiInput() {
     };
 
     for (const auto& [hidButton, imguiButton] : buttonMap) {
-        if (state.buttons.Test(int(hidButton)) && !lastState.buttons.Test(int(hidButton))) {
+        if (state.mButtons.Test(int(hidButton)) && !lastState.mButtons.Test(int(hidButton))) {
             io.AddMouseButtonEvent(imguiButton, true);
-        } else if (!state.buttons.Test(int(hidButton)) && lastState.buttons.Test(int(hidButton))) {
+        } else if (!state.mButtons.Test(int(hidButton)) && lastState.mButtons.Test(int(hidButton))) {
             io.AddMouseButtonEvent(imguiButton, false);
         }
     }
 
-    io.AddMouseWheelEvent(state.wheelDeltaX, state.wheelDeltaY);
+    io.AddMouseWheelEvent(state.mWheelDeltaX, state.mWheelDeltaY);
 
     /* Keyboard missing */
 
